@@ -1,46 +1,31 @@
-import mysql.connector as mysql
-
-
-DB_CONFIG = {
-    "host": "localhost",
-    "user": "root",        # change if different
-    "password": "root"     # change if different
-}
-
+import sqlite3
 
 try:
-    # Connect to MySQL server
-    conn = mysql.connect(**DB_CONFIG)
+    # Connect to SQLite database (creates the file if it doesn’t exist)
+    conn = sqlite3.connect("clinicDB.db")
     cursor = conn.cursor()
-
-    # Create database if not exists
-    cursor.execute("CREATE DATABASE IF NOT EXISTS clinicDB")
-
-    # Select the database
-    cursor.execute("USE clinicDB")
 
     # Create student_school table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS student_school (
-            std_id INT PRIMARY KEY,
-            class INT,
-            section VARCHAR(2),
-            gender VARCHAR(6),
-            join_date DATE
+            std_id INTEGER PRIMARY KEY,
+            class INTEGER,
+            section TEXT,
+            gender TEXT,
+            join_date TEXT
         )
     """)
 
     # Create student_contact table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS student_contact (
-            std_id INT,
-            phone_number VARCHAR(15),
-            email_address VARCHAR(100),
-            emergency_contact_name VARCHAR(100),
-            emergency_contact_phone VARCHAR(15),
-            relationship VARCHAR(50),
+            std_id INTEGER PRIMARY KEY,
+            phone_number TEXT,
+            email_address TEXT,
+            emergency_contact_name TEXT,
+            emergency_contact_phone TEXT,
+            relationship TEXT,
             address TEXT,
-            PRIMARY KEY(std_id),
             FOREIGN KEY(std_id) REFERENCES student_school(std_id)
                 ON DELETE CASCADE ON UPDATE CASCADE
         )
@@ -64,24 +49,23 @@ try:
     ]
 
     cursor.executemany("""
-        INSERT IGNORE INTO student_school (std_id, class, section, gender, join_date)
-        VALUES (%s, %s, %s, %s, %s)
+        INSERT OR IGNORE INTO student_school (std_id, class, section, gender, join_date)
+        VALUES (?, ?, ?, ?, ?)
     """, students)
 
     cursor.executemany("""
-        INSERT IGNORE INTO student_contact (std_id, phone_number, email_address, emergency_contact_name,
-                                            emergency_contact_phone, relationship, address)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT OR IGNORE INTO student_contact (std_id, phone_number, email_address, emergency_contact_name,
+                                               emergency_contact_phone, relationship, address)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, contacts)
 
     conn.commit()
+    print("✅ Database, tables, and sample data created successfully (SQLite).")
 
-    print("✅ Database, tables, and sample data created successfully.")
-
-except mysql.Error as e:
+except sqlite3.Error as e:
     print(f"❌ Error: {e}")
 
 finally:
-    if conn.is_connected():
+    if conn:
         cursor.close()
         conn.close()
