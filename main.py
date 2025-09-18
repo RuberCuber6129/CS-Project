@@ -148,8 +148,14 @@ elif page=="Students":
         allergies=st.text_area("Allergies")
         chronic=st.text_area("Chronic Conditions")
         vacc=st.text_input("Vaccination Status","Up-to-date")
+        height=st.number_input("Height (cm)",min_value=0.0,step=0.1)
+        weight=st.number_input("Weight (kg)",min_value=0.0,step=0.1)
+        bmi=None
+        if height>0 and weight>0:
+            bmi=round(weight/((height/100)**2),2)
+            st.info(f"Calculated BMI: {bmi}")
         if st.form_submit_button("Save"):
-            run_exec(conn,"INSERT INTO students(name,grade_class,gender,date_of_birth,parent_name,parent_contact,address,blood_group,allergies,chronic_conditions,vaccination_status) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(name,grade,gender,dob,parent,contact,address,blood,allergies,chronic,vacc))
+            run_exec(conn,"INSERT INTO students(name,grade_class,gender,date_of_birth,parent_name,parent_contact,address,blood_group,allergies,chronic_conditions,vaccination_status,height_cm,weight_kg,bmi) VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)",(name,grade,gender,dob,parent,contact,address,blood,allergies,chronic,vacc,height,weight,bmi))
             st.success("Saved")
     st.subheader("Search / List Students")
     q=st.text_input("Search by name or class or contact")
